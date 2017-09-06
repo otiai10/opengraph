@@ -38,6 +38,8 @@ func (m *Meta) Contribute(og *OpenGraph) error {
 		og.Image = append(og.Image, &OGImage{URL: m.Content})
 	case m.IsImageProperty():
 		og.SiteName = m.Content
+	case m.IsType():
+		og.Type = m.Content
 	}
 	return nil
 }
@@ -55,6 +57,11 @@ func (m *Meta) IsImage() bool {
 // IsImageProperty retuns if it can be a property of "og:image" struct
 func (m *Meta) IsImageProperty() bool {
 	return strings.HasPrefix(m.Property, "og:image:")
+}
+
+// IsType returns if it can be "og:type"
+func (m *Meta) IsType() bool {
+	return m.Property == "og:type"
 }
 
 // IsSiteName returns if it can be "og:site_name"

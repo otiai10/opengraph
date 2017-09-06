@@ -55,6 +55,7 @@ func New(rawurl string) *OpenGraph {
 	og.Video = []*OGVideo{}
 	og.Audio = []*OGAudio{}
 	og.LocaleAlt = []string{}
+	og.Favicon = "/favicon.ico"
 	u, err := url.Parse(rawurl)
 	if err != nil {
 		og.Error = err
@@ -134,6 +135,26 @@ func (og *OpenGraph) walk(n *html.Node) error {
 	}
 
 	return nil
+}
+
+// ToAbsURL make og.Image and og.Favicon absolute URL if relative.
+func (og *OpenGraph) ToAbsURL() *OpenGraph {
+	for _, img := range og.Image {
+		img.URL = og.abs(img.URL)
+	}
+	og.Favicon = og.abs(og.Favicon)
+	return og
+}
+
+// abs make given URL absolute.
+func (og *OpenGraph) abs(raw string) string {
+	u, _ := url.Parse(raw)
+	if u.IsAbs() {
+		return raw
+	}
+	u.Scheme = og.URL.Scheme
+	u.Host = og.URL.Host
+	return u.String()
 }
 
 // Fulfill fulfills OG informations with some expectations.
