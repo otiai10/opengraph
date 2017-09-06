@@ -1,6 +1,7 @@
 package opengraph
 
 import (
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -36,8 +37,18 @@ func (m *Meta) Contribute(og *OpenGraph) error {
 		og.Title = m.Content
 	case m.IsImage():
 		og.Image = append(og.Image, &OGImage{URL: m.Content})
-	case m.IsImageProperty():
+	case m.IsSiteName():
 		og.SiteName = m.Content
+	case m.IsImageProperty():
+		if len(og.Image) == 0 {
+			return nil
+		}
+		switch m.Property {
+		case "og:image:width":
+			og.Image[len(og.Image)-1].Width, _ = strconv.Atoi(m.Content)
+		case "og:image:height":
+			og.Image[len(og.Image)-1].Height, _ = strconv.Atoi(m.Content)
+		}
 	case m.IsType():
 		og.Type = m.Content
 	}

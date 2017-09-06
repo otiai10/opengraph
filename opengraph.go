@@ -159,5 +159,8 @@ func (og *OpenGraph) abs(raw string) string {
 
 // Fulfill fulfills OG informations with some expectations.
 func (og *OpenGraph) Fulfill() error {
+	if og.SiteName == "" {
+		og.SiteName = og.URL.Host
+	}
 	return nil
 }
