@@ -35,6 +35,8 @@ func (m *Meta) Contribute(og *OpenGraph) error {
 	switch {
 	case m.IsTitle():
 		og.Title = m.Content
+	case m.IsDescription():
+		og.Description = m.Content
 	case m.IsImage():
 		og.Image = append(og.Image, &OGImage{URL: m.Content})
 	case m.IsSiteName():
@@ -55,9 +57,14 @@ func (m *Meta) Contribute(og *OpenGraph) error {
 	return nil
 }
 
-// IsTitle returns if it can be "title" of Oph
+// IsTitle returns if it can be "title" of OGP
 func (m *Meta) IsTitle() bool {
-	return m.Property == "og:title"
+	return m.Property == "og:title" && m.Content != ""
+}
+
+// IsDescription returns if it can be "description" of OGP
+func (m *Meta) IsDescription() bool {
+	return strings.HasSuffix(m.Property, "description")
 }
 
 // IsImage returns if it can be a root of "og:image"

@@ -1,6 +1,7 @@
 package opengraph
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	og := New(dummyServer().URL)
+	og := New(dummyServer(1).URL)
 	Expect(t, og).TypeOf("*opengraph.OpenGraph")
 	Expect(t, og.Error).ToBe(nil)
 
@@ -31,7 +32,7 @@ func TestFetch(t *testing.T) {
 		Expect(t, err).Not().ToBe(nil)
 	})
 
-	s := dummyServer()
+	s := dummyServer(1)
 	og, err := Fetch(s.URL)
 
 	Expect(t, err).ToBe(nil)
@@ -47,11 +48,20 @@ func TestFetch(t *testing.T) {
 	Expect(t, og.Favicon).ToBe(s.URL + "/images/01.favicon.png")
 }
 
-func dummyServer() *httptest.Server {
+func TestFetch_02(t *testing.T) {
+	s := dummyServer(2)
+	og, err := Fetch(s.URL)
+
+	Expect(t, err).ToBe(nil)
+	Expect(t, og.Title).ToBe("はいさいナイト")
+	Expect(t, og.Description).ToBe("All Genre Music Party")
+}
+
+func dummyServer(id int) *httptest.Server {
 	marmoset.LoadViews("./testdata/html")
 	r := marmoset.NewRouter()
 	r.GET("/", func(w http.ResponseWriter, r *http.Request) {
-		marmoset.Render(w).HTML("01", nil)
+		marmoset.Render(w).HTML(fmt.Sprintf("%02d", id), nil)
 	})
 	r.GET("/case/01", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
