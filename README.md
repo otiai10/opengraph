@@ -1,8 +1,8 @@
 # Open Graph Parser for Golang
 
-[![Build Status](https://travis-ci.org/otiai10/opengraph.svg?branch=master)](https://travis-ci.org/otiai10/opengraph)
+[![Build Status](https://travis-ci.org/otiai10/opengraph.svg?branch=master)](https://travis-ci.org/otiai10/opengraph) [![GoDoc](https://godoc.org/github.com/otiai10/opengraph?status.svg)](https://godoc.org/github.com/otiai10/opengraph)
 
-# in code
+# Code Example
 
 ```go
 package main
@@ -18,12 +18,14 @@ func main() {
 }
 ```
 
-# in cli
+# cli as a working example
 
 ```sh
 % go get github.com/otiai10/opengraph/ogp
-% ogp https://github.com/otiai10/too
+% ogp --help
 ```
+
+For more details, see [ogp/main.go](https://github.com/otiai10/opengraph/blob/master/ogp/main.go).
 
 # advanced
 
