@@ -11,6 +11,9 @@ import (
 
 func main() {
 	app := cli.NewApp()
+	app.Version = "1.0.0"
+	app.Usage = "Fetch URL and extract OpenGraph meta informations."
+	app.UsageText = "ogp [-A] {URL}"
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:  "absolute,A",
