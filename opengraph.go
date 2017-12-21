@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -154,6 +156,9 @@ func (og *OpenGraph) abs(raw string) string {
 	}
 	u.Scheme = og.URL.Scheme
 	u.Host = og.URL.Host
+	if !filepath.IsAbs(raw) {
+		u.Path = path.Join(filepath.Dir(og.URL.Path), u.Path)
+	}
 	return u.String()
 }
 

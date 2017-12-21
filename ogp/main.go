@@ -11,6 +11,12 @@ import (
 
 func main() {
 	app := cli.NewApp()
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:  "absolute,A",
+			Usage: "populate relative URLs to absolute URLs",
+		},
+	}
 	app.Action = func(ctx *cli.Context) error {
 		rawurl := ctx.Args().First()
 		if rawurl == "" {
@@ -19,6 +25,9 @@ func main() {
 		og, err := opengraph.Fetch(rawurl)
 		if err != nil {
 			return err
+		}
+		if ctx.Bool("absolute") {
+			og = og.ToAbsURL()
 		}
 		b, err := json.MarshalIndent(og, "", "\t")
 		if err != nil {
