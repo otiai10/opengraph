@@ -1,9 +1,12 @@
 package opengraph
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/otiai10/marmoset"
@@ -55,6 +58,14 @@ func TestFetch_02(t *testing.T) {
 	Expect(t, err).ToBe(nil)
 	Expect(t, og.Title).ToBe("はいさいナイト")
 	Expect(t, og.Description).ToBe("All Genre Music Party")
+
+	b := bytes.NewBuffer(nil)
+	json.NewEncoder(b).Encode(og)
+	Expect(t, strings.Trim(b.String(), "\n")).ToBe(fmt.Sprintf(
+		`{"Title":"はいさいナイト","Type":"website","URL":{"Source":"%s","Scheme":"http","Opaque":"","User":null,"Host":"%s","Path":"","RawPath":"","ForceQuery":false,"RawQuery":"","Fragment":""},"SiteName":"","Image":[],"Video":[],"Audio":[],"Description":"All Genre Music Party","Determiner":"","Locale":"","LocaleAlt":[],"Favicon":"/favicon.ico"}`,
+		s.URL,
+		strings.Replace(s.URL, "http://", "", -1),
+	))
 }
 
 func dummyServer(id int) *httptest.Server {
