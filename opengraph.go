@@ -154,8 +154,12 @@ func (og *OpenGraph) abs(raw string) string {
 	if u.IsAbs() {
 		return raw
 	}
-	u.Scheme = og.URL.Scheme
-	u.Host = og.URL.Host
+	if u.Scheme == "" {
+		u.Scheme = og.URL.Scheme
+	}
+	if u.Host == "" {
+		u.Host = og.URL.Host
+	}
 	if !filepath.IsAbs(raw) {
 		u.Path = path.Join(filepath.Dir(og.URL.Path), u.Path)
 	}
