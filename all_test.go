@@ -68,6 +68,15 @@ func TestFetch_02(t *testing.T) {
 	))
 }
 
+func TestFetch_03(t *testing.T) {
+	s := dummyServer(3)
+	og, err := Fetch(s.URL)
+	Expect(t, err).ToBe(nil)
+	err = og.ToAbsURL().Fulfill()
+	Expect(t, err).ToBe(nil)
+	Expect(t, og.Image[0].URL).ToBe("http://www-cdn.jtvnw.net/images/twitch_logo3.jpg")
+}
+
 func dummyServer(id int) *httptest.Server {
 	marmoset.LoadViews("./testdata/html")
 	r := marmoset.NewRouter()
