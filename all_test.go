@@ -78,7 +78,7 @@ func TestFetch_03(t *testing.T) {
 }
 
 func dummyServer(id int) *httptest.Server {
-	marmoset.LoadViews("./testdata/html")
+	marmoset.LoadViews("./test/html")
 	r := marmoset.NewRouter()
 	r.GET("/", func(w http.ResponseWriter, r *http.Request) {
 		marmoset.Render(w).HTML(fmt.Sprintf("%02d", id), nil)
