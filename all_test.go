@@ -2,12 +2,15 @@ package opengraph
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/otiai10/marmoset"
 	. "github.com/otiai10/mint"
@@ -77,6 +80,19 @@ func TestFetch_03(t *testing.T) {
 	Expect(t, og.Image[0].URL).ToBe("http://www-cdn.jtvnw.net/images/twitch_logo3.jpg")
 }
 
+func TestFetchWithContext(t *testing.T) {
+	s := dummySlowServer(time.Millisecond * 300)
+	defer s.Close()
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
+	_, err := FetchWithContext(ctx, s.URL)
+	Expect(t, err).ToBe(nil)
+
+	ctx, _ = context.WithTimeout(context.Background(), time.Millisecond*100)
+	_, err = FetchWithContext(ctx, s.URL)
+	Expect(t, err).Match(context.DeadlineExceeded.Error())
+}
+
 func dummyServer(id int) *httptest.Server {
 	marmoset.LoadViews("./test/html")
 	r := marmoset.NewRouter()
@@ -87,4 +103,13 @@ func dummyServer(id int) *httptest.Server {
 		w.WriteHeader(http.StatusNotFound)
 	})
 	return httptest.NewServer(r)
+}
+
+func dummySlowServer(d time.Duration) *httptest.Server {
+	var h = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(d)
+		t, _ := template.ParseFiles("./test/html/02.html")
+		t.Execute(w, nil)
+	})
+	return httptest.NewServer(h)
 }
