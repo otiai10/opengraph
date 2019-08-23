@@ -18,7 +18,7 @@ func TitleTag(n *html.Node) *Title {
 
 // Contribute contributes to OpenGraph
 func (t *Title) Contribute(og *OpenGraph) error {
-	if t.Text == "" {
+	if og.Title == "" && t.Text != "" {
 		og.Title = t.Text
 	}
 	return nil
