@@ -80,6 +80,14 @@ func TestFetch_03(t *testing.T) {
 	Expect(t, og.Image[0].URL).ToBe("http://www-cdn.jtvnw.net/images/twitch_logo3.jpg")
 }
 
+func TestFetch_04(t *testing.T) {
+	s := dummyServer(4)
+	og, err := Fetch(s.URL)
+	Expect(t, err).ToBe(nil)
+	Expect(t, len(og.Image)).ToBe(1)
+	Expect(t, og.Image[0].URL).ToBe("/images/01.png")
+}
+
 func TestFetchWithContext(t *testing.T) {
 	s := dummySlowServer(time.Millisecond * 300)
 	defer s.Close()

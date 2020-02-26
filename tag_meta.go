@@ -76,7 +76,7 @@ func (m *Meta) IsDescription() bool {
 
 // IsImage returns if it can be a root of "og:image"
 func (m *Meta) IsImage() bool {
-	return m.Property == "og:image"
+	return m.Property == "og:image" || m.Property == "og:image:url"
 }
 
 // IsImageProperty retuns if it can be a property of "og:image" struct
