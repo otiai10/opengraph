@@ -2,6 +2,7 @@ package opengraph
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -14,7 +15,10 @@ func ExampleFetch() {
 func ExampleOpenGraph_Parse() {
 
 	client := http.DefaultClient
-	res, _ := client.Get("https://github.com/otiai10/amesh")
+	res, err := client.Get("https://github.com/otiai10/amesh")
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer res.Body.Close()
 
 	ogp := new(OpenGraph)

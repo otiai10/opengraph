@@ -65,7 +65,7 @@ func TestFetch_02(t *testing.T) {
 	b := bytes.NewBuffer(nil)
 	json.NewEncoder(b).Encode(og)
 	Expect(t, strings.Trim(b.String(), "\n")).ToBe(fmt.Sprintf(
-		`{"Title":"はいさいナイト","Type":"website","URL":{"Source":"%s","Scheme":"http","Opaque":"","User":null,"Host":"%s","Path":"","RawPath":"","ForceQuery":false,"RawQuery":"","Fragment":""},"SiteName":"","Image":[],"Video":[],"Audio":[],"Description":"All Genre Music Party","Determiner":"","Locale":"","LocaleAlt":[],"Favicon":"/favicon.ico"}`,
+		`{"Policy":{"TrustedTags":["meta","link","title"]},"Title":"はいさいナイト","Type":"website","URL":{"Source":"%s","Scheme":"http","Opaque":"","User":null,"Host":"%s","Path":"","RawPath":"","ForceQuery":false,"RawQuery":"","Fragment":""},"SiteName":"","Image":[],"Video":[],"Audio":[],"Description":"All Genre Music Party","Determiner":"","Locale":"","LocaleAlt":[],"Favicon":"/favicon.ico"}`,
 		s.URL,
 		strings.Replace(s.URL, "http://", "", -1),
 	))
@@ -88,17 +88,32 @@ func TestFetch_04(t *testing.T) {
 	Expect(t, og.Image[0].URL).ToBe("/images/01.png")
 }
 
+func TestFetch_05_TrustedTags(t *testing.T) {
+	s := dummyServer(2)
+	res, err := http.Get(s.URL)
+	Expect(t, err).ToBe(nil)
+	defer res.Body.Close()
+	og := New(s.URL)
+	og.Policy.TrustedTags = []string{HTMLMetaTag}
+	err = og.Parse(res.Body)
+	Expect(t, err).ToBe(nil)
+	Expect(t, og.Title).Not().ToBe("はいさいナイト")
+	Expect(t, og.Title).ToBe("")
+}
+
 func TestFetchWithContext(t *testing.T) {
 	s := dummySlowServer(time.Millisecond * 300)
 	defer s.Close()
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
-	_, err := FetchWithContext(ctx, s.URL)
+	ctx500ms, cancel500ms := context.WithTimeout(context.Background(), time.Millisecond*500)
+	_, err := FetchWithContext(ctx500ms, s.URL)
 	Expect(t, err).ToBe(nil)
+	cancel500ms()
 
-	ctx, _ = context.WithTimeout(context.Background(), time.Millisecond*100)
-	_, err = FetchWithContext(ctx, s.URL)
+	ctx100ms, cancel100ms := context.WithTimeout(context.Background(), time.Millisecond*100)
+	_, err = FetchWithContext(ctx100ms, s.URL)
 	Expect(t, err).Match(context.DeadlineExceeded.Error())
+	cancel100ms()
 }
 
 func dummyServer(id int) *httptest.Server {

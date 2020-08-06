@@ -10,14 +10,29 @@ import (
 	"net/url"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
+const (
+	// HTMLLinkTag is a tag name of <link>
+	HTMLLinkTag string = "link"
+	// HTMLMetaTag is a tag name of <meta>
+	HTMLMetaTag string = "meta"
+	// HTMLTitleTag is a tag name of <title>
+	HTMLTitleTag string = "title"
+)
+
 // OpenGraph represents web page information according to OGP <ogp.me>,
 // and some more additional informations like URL.Host and so.
 type OpenGraph struct {
+
+	// Policy specifies a policy to parse HTML document.
+	Policy struct {
+		TrustedTags []string
+	}
 
 	// Basics
 	Title    string
@@ -53,6 +68,7 @@ type URL struct {
 // New creates new OpenGraph struct with specified URL.
 func New(rawurl string) *OpenGraph {
 	og := new(OpenGraph)
+	og.Policy.TrustedTags = []string{HTMLMetaTag, HTMLLinkTag, HTMLTitleTag}
 	og.HTTPClient = http.DefaultClient
 	og.Image = []*OGImage{}
 	og.Video = []*OGVideo{}
@@ -135,12 +151,15 @@ func (og *OpenGraph) walk(n *html.Node) error {
 	}
 
 	if n.Type == html.ElementNode {
+		if !og.trust(n.Data) {
+			return nil
+		}
 		switch n.Data {
-		case "title":
+		case HTMLTitleTag:
 			return TitleTag(n).Contribute(og)
-		case "meta":
+		case HTMLMetaTag:
 			return MetaTag(n).Contribute(og)
-		case "link":
+		case HTMLLinkTag:
 			return LinkTag(n).Contribute(og)
 		}
 	}
@@ -150,6 +169,13 @@ func (og *OpenGraph) walk(n *html.Node) error {
 	}
 
 	return nil
+}
+
+func (og *OpenGraph) trust(tagName string) bool {
+	if len(og.Policy.TrustedTags) == 0 {
+		return true
+	}
+	return sort.SearchStrings(og.Policy.TrustedTags, tagName) != len(og.Policy.TrustedTags)
 }
 
 // ToAbsURL make og.Image and og.Favicon absolute URL if relative.
