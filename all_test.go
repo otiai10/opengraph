@@ -92,13 +92,15 @@ func TestFetchWithContext(t *testing.T) {
 	s := dummySlowServer(time.Millisecond * 300)
 	defer s.Close()
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*500)
-	_, err := FetchWithContext(ctx, s.URL)
+	ctx500ms, cancel500ms := context.WithTimeout(context.Background(), time.Millisecond*500)
+	_, err := FetchWithContext(ctx500ms, s.URL)
 	Expect(t, err).ToBe(nil)
+	cancel500ms()
 
-	ctx, _ = context.WithTimeout(context.Background(), time.Millisecond*100)
-	_, err = FetchWithContext(ctx, s.URL)
+	ctx100ms, cancel100ms := context.WithTimeout(context.Background(), time.Millisecond*100)
+	_, err = FetchWithContext(ctx100ms, s.URL)
 	Expect(t, err).Match(context.DeadlineExceeded.Error())
+	cancel100ms()
 }
 
 func dummyServer(id int) *httptest.Server {

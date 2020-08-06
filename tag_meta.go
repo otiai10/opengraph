@@ -64,7 +64,7 @@ func (m *Meta) IsTitle() bool {
 	return m.Property == "og:title" && m.Content != ""
 }
 
-// IsDescription returns if it can be "description" of OGP
+// IsOGDescription returns if it can be "description" of OGP
 func (m *Meta) IsOGDescription() bool {
 	return m.Property == "og:description" && m.Content != ""
 }
@@ -79,7 +79,7 @@ func (m *Meta) IsImage() bool {
 	return m.Property == "og:image" || m.Property == "og:image:url"
 }
 
-// IsImageProperty retuns if it can be a property of "og:image" struct
+// IsImageProperty returns if it can be a property of "og:image" struct
 func (m *Meta) IsImageProperty() bool {
 	return strings.HasPrefix(m.Property, "og:image:")
 }
