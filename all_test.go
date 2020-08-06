@@ -65,7 +65,7 @@ func TestFetch_02(t *testing.T) {
 	b := bytes.NewBuffer(nil)
 	json.NewEncoder(b).Encode(og)
 	Expect(t, strings.Trim(b.String(), "\n")).ToBe(fmt.Sprintf(
-		`{"Title":"はいさいナイト","Type":"website","URL":{"Source":"%s","Scheme":"http","Opaque":"","User":null,"Host":"%s","Path":"","RawPath":"","ForceQuery":false,"RawQuery":"","Fragment":""},"SiteName":"","Image":[],"Video":[],"Audio":[],"Description":"All Genre Music Party","Determiner":"","Locale":"","LocaleAlt":[],"Favicon":"/favicon.ico"}`,
+		`{"Policy":{"TrustedTags":["meta","link","title"]},"Title":"はいさいナイト","Type":"website","URL":{"Source":"%s","Scheme":"http","Opaque":"","User":null,"Host":"%s","Path":"","RawPath":"","ForceQuery":false,"RawQuery":"","Fragment":""},"SiteName":"","Image":[],"Video":[],"Audio":[],"Description":"All Genre Music Party","Determiner":"","Locale":"","LocaleAlt":[],"Favicon":"/favicon.ico"}`,
 		s.URL,
 		strings.Replace(s.URL, "http://", "", -1),
 	))
@@ -86,6 +86,19 @@ func TestFetch_04(t *testing.T) {
 	Expect(t, err).ToBe(nil)
 	Expect(t, len(og.Image)).ToBe(1)
 	Expect(t, og.Image[0].URL).ToBe("/images/01.png")
+}
+
+func TestFetch_05_TrustedTags(t *testing.T) {
+	s := dummyServer(2)
+	res, err := http.Get(s.URL)
+	Expect(t, err).ToBe(nil)
+	defer res.Body.Close()
+	og := New(s.URL)
+	og.Policy.TrustedTags = []string{HTMLMetaTag}
+	err = og.Parse(res.Body)
+	Expect(t, err).ToBe(nil)
+	Expect(t, og.Title).Not().ToBe("はいさいナイト")
+	Expect(t, og.Title).ToBe("")
 }
 
 func TestFetchWithContext(t *testing.T) {
