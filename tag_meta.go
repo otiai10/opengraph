@@ -55,6 +55,8 @@ func (m *Meta) Contribute(og *OpenGraph) error {
 		}
 	case m.IsType():
 		og.Type = m.Content
+	case m.IsURL():
+		og.URL.Value = m.Content
 	}
 	return nil
 }
@@ -92,4 +94,9 @@ func (m *Meta) IsType() bool {
 // IsSiteName returns if it can be "og:site_name"
 func (m *Meta) IsSiteName() bool {
 	return m.Property == "og:site_name"
+}
+
+// IsURL returns if it can be "og:url"
+func (m *Meta) IsURL() bool {
+	return m.Property == "og:url"
 }

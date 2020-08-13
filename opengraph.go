@@ -63,6 +63,8 @@ type OpenGraph struct {
 type URL struct {
 	Source string
 	*url.URL
+
+	Value string
 }
 
 // New creates new OpenGraph struct with specified URL.
