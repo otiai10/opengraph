@@ -1,6 +1,8 @@
 # Open Graph Parser for Golang
 
-[![Build Status](https://travis-ci.org/otiai10/opengraph.svg?branch=master)](https://travis-ci.org/otiai10/opengraph) [![codecov](https://codecov.io/gh/otiai10/opengraph/branch/master/graph/badge.svg)](https://codecov.io/gh/otiai10/opengraph) [![GoDoc](https://godoc.org/github.com/otiai10/opengraph?status.svg)](https://godoc.org/github.com/otiai10/opengraph)
+[![Go](https://github.com/otiai10/opengraph/workflows/Go/badge.svg)](https://github.com/otiai10/opengraph/actions)
+[![codecov](https://codecov.io/gh/otiai10/opengraph/branch/master/graph/badge.svg)](https://codecov.io/gh/otiai10/opengraph)
+[![GoDoc](https://godoc.org/github.com/otiai10/opengraph?status.svg)](https://pkg.go.dev/github.com/otiai10/opengraph)
 
 # Code Example
 
