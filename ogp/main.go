@@ -29,9 +29,9 @@ func main() {
 		if err != nil {
 			return err
 		}
-		if ctx.Bool("absolute") {
-			og = og.ToAbsURL()
-		}
+		// if ctx.Bool("absolute") {
+		// 	og = og.ToAbsURL()
+		// }
 		b, err := json.MarshalIndent(og, "", "\t")
 		if err != nil {
 			return err
