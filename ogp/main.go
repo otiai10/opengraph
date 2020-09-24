@@ -15,10 +15,10 @@ func main() {
 	app.Usage = "Fetch URL and extract OpenGraph meta informations."
 	app.UsageText = "ogp [-A] {URL}"
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:  "absolute,A",
-			Usage: "populate relative URLs to absolute URLs",
-		},
+		// cli.BoolFlag{
+		// 	Name:  "absolute,A",
+		// 	Usage: "populate relative URLs to absolute URLs",
+		// },
 	}
 	app.Action = func(ctx *cli.Context) error {
 		rawurl := ctx.Args().First()
