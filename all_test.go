@@ -3,6 +3,7 @@ package opengraph
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -76,6 +77,23 @@ func TestOpenGraph_Parse(t *testing.T) {
 	err := ogp.Parse(r)
 	Expect(t, err).ToBe(nil)
 	Expect(t, ogp.Title).ToBe("test_test")
+}
+
+func TestOpenGraph_ToAbs(t *testing.T) {
+	ogp := New(testserver.URL + "/case/01_hello")
+	err := ogp.Fetch(nil)
+	Expect(t, err).ToBe(nil)
+	u, err := url.Parse(ogp.Image[0].URL)
+	Expect(t, err).ToBe(nil)
+	Expect(t, u.IsAbs()).ToBe(false)
+	err = ogp.ToAbs()
+	Expect(t, err).ToBe(nil)
+	u, err = url.Parse(ogp.Image[0].URL)
+	Expect(t, err).ToBe(nil)
+	Expect(t, u.IsAbs()).ToBe(true)
+	u, err = url.Parse(ogp.Audio[0].URL)
+	Expect(t, err).ToBe(nil)
+	Expect(t, u.IsAbs()).ToBe(true)
 }
 
 // This server is ONLY for testing.

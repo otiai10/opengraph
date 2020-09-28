@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"path"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -136,4 +138,45 @@ func (og *OpenGraph) walk(node *html.Node) error {
 	}
 
 	return nil
+}
+
+// ToAbs makes all relative URLs to absolute URLs
+// by applying hostname of ogp.URL or Intent.URL.
+func (og *OpenGraph) ToAbs() error {
+	raw := og.URL
+	if raw == "" {
+		raw = og.Intent.URL
+	}
+	base, err := url.Parse(raw)
+	if err != nil {
+		return err
+	}
+	// For og:image.
+	for i, img := range og.Image {
+		og.Image[i].URL = og.joinToAbsolute(base, img.URL)
+	}
+	// For og:audio
+	for i, audio := range og.Audio {
+		og.Audio[i].URL = og.joinToAbsolute(base, audio.URL)
+	}
+	// For og:video
+	for i, video := range og.Video {
+		og.Video[i].URL = og.joinToAbsolute(base, video.URL)
+	}
+	// For favicon
+	if og.Favicon.URL != "" {
+		og.Favicon.URL = og.joinToAbsolute(base, og.Favicon.URL)
+	}
+	return nil
+}
+
+func (og *OpenGraph) joinToAbsolute(base *url.URL, relpath string) string {
+	src, err := url.Parse(relpath)
+	if err == nil && src.IsAbs() {
+		return src.String()
+	}
+	if strings.HasPrefix(relpath, "/") {
+		return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, relpath)
+	}
+	return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, path.Join(base.Path, relpath))
 }

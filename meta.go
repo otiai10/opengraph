@@ -43,7 +43,7 @@ func (meta *Meta) Contribute(og *OpenGraph) (err error) {
 		og.SiteName = meta.Content
 	case meta.IsImage():
 		og.Image = append(og.Image, Image{URL: meta.Content})
-	case meta.IsImageProperty():
+	case meta.IsPropertyOf("og:image"):
 		if len(og.Image) == 0 {
 			return nil
 		}
@@ -53,6 +53,10 @@ func (meta *Meta) Contribute(og *OpenGraph) (err error) {
 		case "og:image:height":
 			og.Image[len(og.Image)-1].Height, err = strconv.Atoi(meta.Content)
 		}
+	case meta.IsAudio():
+		og.Audio = append(og.Audio, Audio{URL: meta.Content})
+	case meta.IsVideo():
+		og.Video = append(og.Video, Video{URL: meta.Content})
 	case meta.IsType():
 		og.Type = meta.Content
 	case meta.IsURL():
@@ -82,9 +86,19 @@ func (meta *Meta) IsImage() bool {
 	return meta.Property == "og:image" || meta.Property == "og:image:url"
 }
 
-// IsImageProperty returns if it can be a property of "og:image" struct
-func (meta *Meta) IsImageProperty() bool {
-	return strings.HasPrefix(meta.Property, "og:image:")
+// IsPropertyOf returns if it can be a property of specified struct
+func (meta *Meta) IsPropertyOf(name string) bool {
+	return strings.HasPrefix(meta.Property, name+":")
+}
+
+// IsAudio reeturns if it can be a root of "og:audio"
+func (meta *Meta) IsAudio() bool {
+	return meta.Property == "og:audio" || meta.Property == "og:audio:url"
+}
+
+// IsVideo returns if it can be a root of "og:video"
+func (meta *Meta) IsVideo() bool {
+	return meta.Property == "og:video" || meta.Property == "og:video:url"
 }
 
 // IsType returns if it can be "og:type"
