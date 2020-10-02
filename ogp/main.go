@@ -25,8 +25,8 @@ func main() {
 		if rawurl == "" {
 			return fmt.Errorf("URL must be specified")
 		}
-		og, err := opengraph.Fetch(rawurl)
-		if err != nil {
+		og := opengraph.New(rawurl)
+		if err := og.Fetch(nil); err != nil {
 			return err
 		}
 		if ctx.Bool("absolute") {

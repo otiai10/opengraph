@@ -53,9 +53,15 @@ type OpenGraph struct {
 	Intent Intent `json:"-"`
 }
 
-// New ...
+// New constructs new OpenGraph struct and fill nullable fields.
 func New(rawurl string) *OpenGraph {
-	return &OpenGraph{Intent: Intent{URL: rawurl}}
+	return &OpenGraph{
+		Image:     []Image{},
+		Audio:     []Audio{},
+		Video:     []Video{},
+		LocaleAlt: []string{},
+		Intent:    Intent{URL: rawurl},
+	}
 }
 
 // Fetch creates and parses OpenGraph with specified URL.
@@ -105,6 +111,10 @@ func (og *OpenGraph) Fetch(ctx context.Context) error {
 
 	if err = og.Parse(res.Body); err != nil {
 		return err
+	}
+
+	if !og.Intent.Strict && og.Favicon.URL == "" {
+		og.Favicon.URL = "/favicon.ico"
 	}
 
 	return nil
