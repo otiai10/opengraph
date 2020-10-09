@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/otiai10/opengraph"
@@ -25,8 +26,15 @@ func main() {
 		if rawurl == "" {
 			return fmt.Errorf("URL must be specified")
 		}
-		og := opengraph.New(rawurl)
-		if err := og.Fetch(nil); err != nil {
+		u, err := url.Parse(rawurl)
+		if err != nil {
+			return err
+		}
+		if u.Scheme == "" {
+			u.Scheme = "https"
+		}
+		og := opengraph.New(u.String())
+		if err := og.Fetch(); err != nil {
 			return err
 		}
 		if ctx.Bool("absolute") {

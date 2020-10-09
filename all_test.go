@@ -1,6 +1,7 @@
 package opengraph
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -53,20 +54,42 @@ func TestFetch(t *testing.T) {
 		Expect(t, err).Not().ToBe(nil)
 		Expect(t, err.Error()).ToBe("Content type must be text/html")
 	})
+	When(t, "strict flag is on", func(t *testing.T) {
+		og, err := Fetch(testserver.URL+"/case/03_image", Intent{Strict: true})
+		Expect(t, err).ToBe(nil)
+		Expect(t, og.Title).ToBe("")
+		og, err = Fetch(testserver.URL+"/case/03_image", Intent{Strict: false})
+		Expect(t, err).ToBe(nil)
+		Expect(t, og.Title).ToBe("TEST: 03_image (title tag)")
+	})
+	When(t, "context is specified", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+		intent := Intent{
+			Context: ctx,
+		}
+		ogp, err := Fetch(testserver.URL+"/slow/100", intent)
+		cancel()
+		Expect(t, err).ToBe(nil)
+		Expect(t, ogp.Title).ToBe("Hello! Open Graph!!")
+		ctx, cancel = context.WithTimeout(context.Background(), 200*time.Millisecond)
+		_, err = Fetch(testserver.URL+"/slow/300", intent)
+		cancel()
+		Expect(t, err).Not().ToBe(nil)
+	})
 }
 
 func TestOpenGraph_Fetch(t *testing.T) {
 	ogp := &OpenGraph{}
-	err := ogp.Fetch(nil)
+	err := ogp.Fetch()
 	Expect(t, err.Error()).ToBe("no URL given yet")
 
 	ogp.Intent.URL = testserver.URL + "/case/01_hello"
-	err = ogp.Fetch(nil)
+	err = ogp.Fetch()
 	Expect(t, err).ToBe(nil)
 
 	When(t, "ogp already has an error", func(t *testing.T) {
 		ogp := New(":INVALID_URL")
-		err := ogp.Fetch(nil)
+		err := ogp.Fetch()
 		Expect(t, err).Not().ToBe(nil)
 	})
 }
@@ -81,7 +104,7 @@ func TestOpenGraph_Parse(t *testing.T) {
 
 func TestOpenGraph_ToAbs(t *testing.T) {
 	ogp := New(testserver.URL + "/case/01_hello")
-	err := ogp.Fetch(nil)
+	err := ogp.Fetch()
 	Expect(t, err).ToBe(nil)
 	u, err := url.Parse(ogp.Image[0].URL)
 	Expect(t, err).ToBe(nil)
@@ -118,7 +141,7 @@ func createTestServer() *httptest.Server {
 			return
 		}
 		time.Sleep(time.Duration(msec) * time.Millisecond)
-		mmst.Render(w).HTML("02", nil)
+		mmst.Render(w).HTML("01_hello", nil)
 	})
 	return httptest.NewServer(r)
 }

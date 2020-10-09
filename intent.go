@@ -1,6 +1,7 @@
 package opengraph
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -8,7 +9,20 @@ import (
 // of this OpenGraph object.
 // This SHOULD NOT have any meaning for "OpenGraph Protocol".
 type Intent struct {
-	URL        string       // Target URL of this intent.
-	HTTPClient *http.Client // HTTP Client to be used for this intent.
-	Strict     bool
+
+	// URL of this intent to fetch an OGP.
+	// This does NOT mean `og:url` of the page.
+	URL string
+
+	// Context of the web request of this Intent.
+	Context context.Context
+	// HTTP Client to be used for this intent.
+	HTTPClient *http.Client
+
+	// Scrict is just an alias of `TrustedTags`.
+	// `Strict == true` means `TrustedTags = ["meta"]`,
+	// and `Strict == false` means `TrustedTags == ["meta", "title", "link"]`.
+	Strict bool
+	// TrustedTags specify which tags to be respected.
+	TrustedTags []string
 }

@@ -60,25 +60,25 @@ func New(rawurl string) *OpenGraph {
 		Audio:     []Audio{},
 		Video:     []Video{},
 		LocaleAlt: []string{},
-		Intent:    Intent{URL: rawurl},
+		Intent: Intent{
+			URL: rawurl,
+		},
 	}
 }
 
 // Fetch creates and parses OpenGraph with specified URL.
-func Fetch(rawurl string) (*OpenGraph, error) {
-	return FetchWithContext(context.Background(), rawurl)
-}
-
-// FetchWithContext creates and parses OpenGraph with specified URL.
-// Timeout can be handled with provided context.
-func FetchWithContext(ctx context.Context, rawurl string) (*OpenGraph, error) {
-	og := &OpenGraph{Intent: Intent{URL: rawurl}}
-	err := og.Fetch(ctx)
-	return og, err
+func Fetch(url string, intent ...Intent) (*OpenGraph, error) {
+	ogp := New(url)
+	if len(intent) > 0 {
+		ogp.Intent = intent[0]
+	}
+	ogp.Intent.URL = url
+	err := ogp.Fetch()
+	return ogp, err
 }
 
 // Fetch ...
-func (og *OpenGraph) Fetch(ctx context.Context) error {
+func (og *OpenGraph) Fetch() error {
 
 	if og.Intent.URL == "" {
 		return fmt.Errorf("no URL given yet")
@@ -93,11 +93,11 @@ func (og *OpenGraph) Fetch(ctx context.Context) error {
 		return err
 	}
 
-	if ctx == nil {
-		ctx = context.Background()
+	if og.Intent.Context == nil {
+		og.Intent.Context = context.Background()
 	}
 
-	req = req.WithContext(ctx)
+	req = req.WithContext(og.Intent.Context)
 
 	res, err := og.Intent.HTTPClient.Do(req)
 	if err != nil {
@@ -123,6 +123,15 @@ func (og *OpenGraph) Fetch(ctx context.Context) error {
 // Parse parses http.Response.Body and construct OpenGraph informations.
 // Caller should close body after it gets parsed.
 func (og *OpenGraph) Parse(body io.Reader) error {
+
+	if len(og.Intent.TrustedTags) == 0 {
+		if og.Intent.Strict {
+			og.Intent.TrustedTags = []string{HTMLMetaTag}
+		} else {
+			og.Intent.TrustedTags = []string{HTMLMetaTag, HTMLTitleTag, HTMLLinkTag}
+		}
+	}
+
 	node, err := html.Parse(body)
 	if err != nil {
 		return err
@@ -134,11 +143,11 @@ func (og *OpenGraph) walk(node *html.Node) error {
 
 	if node.Type == html.ElementNode {
 		switch {
-		case node.Data == HTMLMetaTag:
+		case node.Data == HTMLMetaTag && og.trust(node.Data):
 			return MetaTag(node).Contribute(og)
-		case !og.Intent.Strict && node.Data == HTMLTitleTag:
+		case node.Data == HTMLTitleTag && og.trust(node.Data):
 			return TitleTag(node).Contribute(og)
-		case !og.Intent.Strict && node.Data == HTMLLinkTag:
+		case node.Data == HTMLLinkTag && og.trust(node.Data):
 			return LinkTag(node).Contribute(og)
 		}
 	}
@@ -148,6 +157,15 @@ func (og *OpenGraph) walk(node *html.Node) error {
 	}
 
 	return nil
+}
+
+func (og *OpenGraph) trust(tagName string) bool {
+	for _, name := range og.Intent.TrustedTags {
+		if name == tagName {
+			return true
+		}
+	}
+	return false
 }
 
 // ToAbs makes all relative URLs to absolute URLs
