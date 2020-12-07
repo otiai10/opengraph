@@ -138,7 +138,7 @@ func (og *OpenGraph) Parse(body io.Reader) error {
 	if err != nil {
 		return err
 	}
-	og.walk(node)
+	og.Walk(node)
 	return nil
 }
 
@@ -146,8 +146,7 @@ func (og *OpenGraph) satisfied() bool {
 	return false
 }
 
-func (og *OpenGraph) walk(n *html.Node) error {
-
+func (og *OpenGraph) Walk(n *html.Node) error {
 	if og.satisfied() {
 		return nil
 	}
@@ -167,7 +166,7 @@ func (og *OpenGraph) walk(n *html.Node) error {
 	}
 
 	for child := n.FirstChild; child != nil; child = child.NextSibling {
-		og.walk(child)
+		og.Walk(child)
 	}
 
 	return nil
