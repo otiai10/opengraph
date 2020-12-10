@@ -138,15 +138,20 @@ func (og *OpenGraph) Parse(body io.Reader) error {
 	if err != nil {
 		return err
 	}
-	og.Walk(node)
+	og.walk(node)
 	return nil
+}
+
+// Walk scans HTML nodes to pick up meaningful OGP data.
+func (og *OpenGraph) Walk(n *html.Node) error {
+	return og.walk(n)
 }
 
 func (og *OpenGraph) satisfied() bool {
 	return false
 }
 
-func (og *OpenGraph) Walk(n *html.Node) error {
+func (og *OpenGraph) walk(n *html.Node) error {
 	if og.satisfied() {
 		return nil
 	}
@@ -166,7 +171,7 @@ func (og *OpenGraph) Walk(n *html.Node) error {
 	}
 
 	for child := n.FirstChild; child != nil; child = child.NextSibling {
-		og.Walk(child)
+		og.walk(child)
 	}
 
 	return nil
