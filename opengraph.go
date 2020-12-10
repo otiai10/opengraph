@@ -142,12 +142,16 @@ func (og *OpenGraph) Parse(body io.Reader) error {
 	return nil
 }
 
+// Walk scans HTML nodes to pick up meaningful OGP data.
+func (og *OpenGraph) Walk(n *html.Node) error {
+	return og.walk(n)
+}
+
 func (og *OpenGraph) satisfied() bool {
 	return false
 }
 
 func (og *OpenGraph) walk(n *html.Node) error {
-
 	if og.satisfied() {
 		return nil
 	}

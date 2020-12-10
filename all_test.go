@@ -11,6 +11,7 @@ import (
 
 	"github.com/otiai10/marmoset"
 	. "github.com/otiai10/mint"
+	"golang.org/x/net/html"
 )
 
 func TestNew(t *testing.T) {
@@ -113,6 +114,26 @@ func TestFetchWithContext(t *testing.T) {
 	_, err = FetchWithContext(ctx100ms, s.URL)
 	Expect(t, err).Match(context.DeadlineExceeded.Error())
 	cancel100ms()
+}
+
+func TestOpenGraph_Walk(t *testing.T) {
+	s := dummyServer(2)
+	res, err := http.Get(s.URL)
+	Expect(t, err).ToBe(nil)
+
+	node, err := html.Parse(res.Body)
+	Expect(t, err).ToBe(nil)
+
+	og := New(s.URL)
+	err = og.Walk(node)
+	Expect(t, err).ToBe(nil)
+	Expect(t, og.Title).ToBe("はいさいナイト")
+	res.Body.Close()
+
+	again := New(s.URL)
+	err = again.Walk(node)
+	Expect(t, err).ToBe(nil)
+	Expect(t, again.Title).ToBe("はいさいナイト")
 }
 
 func dummyServer(id int) *httptest.Server {
