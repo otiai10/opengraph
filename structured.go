@@ -35,6 +35,8 @@ type Video struct {
 	Type      string `json:"type"` // Content-Type
 	Width     int    `json:"width"`
 	Height    int    `json:"height"`
+	// Duration in seconds
+	Duration int `json:"duration"`
 }
 
 // Audio represents a structure of "og:audio".
