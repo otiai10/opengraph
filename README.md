@@ -22,14 +22,6 @@ func main() {
 }
 ```
 
-# CLI as a working example
-
-```sh
-% go get github.com/otiai10/opengraph/ogp
-% ogp --help
-% ogp -A otiai10.com
-```
-
 # Advanced usage
 
 Set an option for fetching:
@@ -51,11 +43,25 @@ ogp := &opengraph.OpenGraph{}
 err := ogp.Parse(f)
 ```
 
-Make URLs absolute:
+of if you already have parsed `*html.Node`:
+
+```go
+err := ogp.Walk(node)
+```
+
+Do you wanna make absolute URLs?:
 ```go
 ogp.Image[0].URL // /logo.png
 ogp.ToAbs()
 ogp.Image[0].URL // https://ogp.me/logo.png
+```
+
+# CLI as a working example
+
+```sh
+% go get github.com/otiai10/opengraph/ogp
+% ogp --help
+% ogp -A otiai10.com
 ```
 
 # Issues
