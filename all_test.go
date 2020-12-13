@@ -93,6 +93,12 @@ func TestOpenGraph_Fetch(t *testing.T) {
 		err := ogp.Fetch()
 		Expect(t, err).Not().ToBe(nil)
 	})
+
+	When(t, "custom http client is given", func(t *testing.T) {
+		ogp.Intent.HTTPClient = http.DefaultClient
+		err := ogp.Fetch()
+		Expect(t, err).ToBe(nil)
+	})
 }
 
 func TestFetchVideo(t *testing.T) {
