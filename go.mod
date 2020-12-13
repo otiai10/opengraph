@@ -1,7 +1,5 @@
 module github.com/otiai10/opengraph
 
-go 1.12
-
 require (
 	github.com/otiai10/marmoset v0.4.0
 	github.com/otiai10/mint v1.3.2
