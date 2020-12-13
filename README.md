@@ -2,9 +2,12 @@
 
 Go implementation of https://ogp.me/
 
+[![reference](https://pkg.go.dev/badge/github.com/otiai10/opengraph)](https://pkg.go.dev/github.com/otiai10/opengraph)
 [![Go](https://github.com/otiai10/opengraph/workflows/Go/badge.svg)](https://github.com/otiai10/opengraph/actions)
-[![codecov](https://codecov.io/gh/otiai10/opengraph/branch/master/graph/badge.svg)](https://codecov.io/gh/otiai10/opengraph)
-[![GoDoc](https://godoc.org/github.com/otiai10/opengraph?status.svg)](https://pkg.go.dev/github.com/otiai10/opengraph)
+[![codecov](https://codecov.io/gh/otiai10/opengraph/branch/master/graph/badge.svg?token=D4mPKqi9fH)](https://codecov.io/gh/otiai10/opengraph)
+[![Go Report Card](https://goreportcard.com/badge/github.com/otiai10/opengraph)](https://goreportcard.com/report/github.com/otiai10/opengraph)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/otiai10/opengraph/blob/main/LICENSE)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/otiai10/opengraph?sort=semver)
 
 # Code Example
 
@@ -22,6 +25,16 @@ func main() {
 }
 ```
 
+# You can try CLI as a working example
+
+```sh
+% go get github.com/otiai10/opengraph/ogp
+% ogp --help
+% ogp -A otiai10.com
+```
+
+Just for fun 😉
+
 # Advanced usage
 
 Set an option for fetching:
@@ -36,6 +49,7 @@ ogp, err := opengraph.Fetch("https://ogp.me", intent)
 ```
 
 Use any `io.Reader` as a data source:
+
 ```go
 f, _ := os.Open("my_test.html")
 defer f.Close()
@@ -43,7 +57,7 @@ ogp := &opengraph.OpenGraph{}
 err := ogp.Parse(f)
 ```
 
-of if you already have parsed `*html.Node`:
+or if you already have parsed `*html.Node`:
 
 ```go
 err := ogp.Walk(node)
@@ -54,14 +68,6 @@ Do you wanna make absolute URLs?:
 ogp.Image[0].URL // /logo.png
 ogp.ToAbs()
 ogp.Image[0].URL // https://ogp.me/logo.png
-```
-
-# CLI as a working example
-
-```sh
-% go get github.com/otiai10/opengraph/ogp
-% ogp --help
-% ogp -A otiai10.com
 ```
 
 # Issues
