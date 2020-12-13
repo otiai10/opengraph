@@ -57,6 +57,22 @@ func (meta *Meta) Contribute(og *OpenGraph) (err error) {
 		og.Audio = append(og.Audio, Audio{URL: meta.Content})
 	case meta.IsVideo():
 		og.Video = append(og.Video, Video{URL: meta.Content})
+	case meta.IsPropertyOf("og:video"):
+		if len(og.Video) == 0 {
+			return nil
+		}
+		switch meta.Property {
+		case "og:video:type":
+			og.Video[len(og.Video)-1].Type = meta.Content
+		case "og:video:secure_url":
+			og.Video[len(og.Video)-1].SecureURL = meta.Content
+		case "og:video:width":
+			og.Video[len(og.Video)-1].Width, err = strconv.Atoi(meta.Content)
+		case "og:video:height":
+			og.Video[len(og.Video)-1].Height, err = strconv.Atoi(meta.Content)
+		case "og:video:duration":
+			og.Video[len(og.Video)-1].Duration, err = strconv.Atoi(meta.Content)
+		}
 	case meta.IsType():
 		og.Type = meta.Content
 	case meta.IsURL():
