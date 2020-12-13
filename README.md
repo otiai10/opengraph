@@ -1,5 +1,7 @@
 # Open Graph Parser for Golang
 
+Go implementation of https://ogp.me/
+
 [![Go](https://github.com/otiai10/opengraph/workflows/Go/badge.svg)](https://github.com/otiai10/opengraph/actions)
 [![codecov](https://codecov.io/gh/otiai10/opengraph/branch/master/graph/badge.svg)](https://codecov.io/gh/otiai10/opengraph)
 [![GoDoc](https://godoc.org/github.com/otiai10/opengraph?status.svg)](https://pkg.go.dev/github.com/otiai10/opengraph)
@@ -11,13 +13,47 @@ package main
 
 import (
 	"fmt"
-	"github.com/otiai10/opengraph"
+	"github.com/otiai10/opengraph/v2"
 )
 
 func main() {
-	og, err := opengraph.Fetch("https://www.youtube.com/watch?v=5blm22DeeHY")
-	fmt.Printf("OpenGraph: %+v\nError: %v\n", og, err)
+	ogp, err := opengraph.Fetch("https://github.com/")
+	fmt.Println(ogp, err)
 }
+```
+
+# Advanced usage
+
+Set an option for fetching:
+```go
+intent := opengraph.Intent{
+	Context:     ctx,
+	HTTPClient:  client,
+	Strict:      true,
+	TrustedTags: []string{"meta", "title"},
+}
+ogp, err := opengraph.Fetch("https://ogp.me", intent)
+```
+
+Use any `io.Reader` as a data source:
+```go
+f, _ := os.Open("my_test.html")
+defer f.Close()
+ogp := &opengraph.OpenGraph{}
+err := ogp.Parse(f)
+```
+
+of if you already have parsed `*html.Node`:
+
+```go
+err := ogp.Walk(node)
+```
+
+Do you wanna make absolute URLs?:
+```go
+ogp.Image[0].URL // /logo.png
+ogp.ToAbs()
+ogp.Image[0].URL // https://ogp.me/logo.png
 ```
 
 # CLI as a working example
@@ -25,13 +61,9 @@ func main() {
 ```sh
 % go get github.com/otiai10/opengraph/ogp
 % ogp --help
+% ogp -A otiai10.com
 ```
 
-For more details, see [ogp/main.go](https://github.com/otiai10/opengraph/blob/master/ogp/main.go).
+# Issues
 
-# Advanced
-
-- [`og.Parse(body *io.Reader)`](https://godoc.org/github.com/otiai10/opengraph#OpenGraph.Parse) to re-use `*http.Response`
-- [`og.HTTPClient`](https://godoc.org/github.com/otiai10/opengraph#OpenGraph) to customize `*http.Client` for fetching
-- [`og.ToAbsURL()`](https://godoc.org/github.com/otiai10/opengraph#OpenGraph.ToAbsURL) to restore relative URL, e.g. `og.Favicon`
-- ~~[`og.Fulfill()`](https://godoc.org/github.com/otiai10/opengraph#OpenGraph.Fulfill) to fill empty fileds.~~ You ain't gonna need it
+- https://github.com/otiai10/opengraph/issues

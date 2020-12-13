@@ -9,18 +9,16 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"path/filepath"
-	"sort"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
 const (
-	// HTMLLinkTag is a tag name of <link>
-	HTMLLinkTag string = "link"
 	// HTMLMetaTag is a tag name of <meta>
 	HTMLMetaTag string = "meta"
+	// HTMLLinkTag is a tag name of <link>
+	HTMLLinkTag string = "link"
 	// HTMLTitleTag is a tag name of <title>
 	HTMLTitleTag string = "title"
 )
@@ -29,148 +27,135 @@ const (
 // and some more additional informations like URL.Host and so.
 type OpenGraph struct {
 
-	// Policy specifies a policy to parse HTML document.
-	Policy struct {
-		TrustedTags []string
-	}
+	// Basic Metadata
+	// https://ogp.me/#metadata
+	Title string  `json:"title"`
+	Type  string  `json:"type"`
+	Image []Image `json:"image"` // could be multiple
+	URL   string  `json:"url"`
 
-	// Basics
-	Title    string
-	Type     string
-	URL      URL
-	SiteName string
+	// Optional Metadata
+	// https://ogp.me/#optional
+	Audio       []Audio  `json:"audio"` // could be multiple
+	Description string   `json:"description"`
+	Determiner  string   `json:"determiner"` // TODO: enum of (a, an, the, "", auto)
+	Locale      string   `json:"locale"`
+	LocaleAlt   []string `json:"locale_alternate"`
+	SiteName    string   `json:"site_name"`
+	Video       []Video  `json:"video"`
 
-	// Structures
-	Image []*OGImage
-	Video []*OGVideo
-	Audio []*OGAudio
+	// Additional (unofficial)
+	Favicon Favicon `json:"favicon"`
 
-	// Optionals
-	Description string
-	Determiner  string // TODO: enum?
-	Locale      string
-	LocaleAlt   []string
-
-	// Additionals
-	Favicon string
-
-	// Utils
-	HTTPClient *http.Client `json:"-"`
-	Error      error        `json:"-"`
+	// Intent represents how to fetch, parse, and complete properties
+	// of this OpenGraph object.
+	// This SHOULD NOT have any meaning for "OpenGraph Protocol".
+	Intent Intent `json:"-"`
 }
 
-// URL includes *url.URL
-type URL struct {
-	Source string
-	*url.URL
-
-	Value string
-}
-
-// New creates new OpenGraph struct with specified URL.
+// New constructs new OpenGraph struct and fill nullable fields.
 func New(rawurl string) *OpenGraph {
-	og := new(OpenGraph)
-	og.Policy.TrustedTags = []string{HTMLMetaTag, HTMLLinkTag, HTMLTitleTag}
-	og.HTTPClient = http.DefaultClient
-	og.Image = []*OGImage{}
-	og.Video = []*OGVideo{}
-	og.Audio = []*OGAudio{}
-	og.LocaleAlt = []string{}
-	og.Favicon = "/favicon.ico"
-	u, err := url.Parse(rawurl)
-	if err != nil {
-		og.Error = err
-		return og
+	return &OpenGraph{
+		Image:     []Image{},
+		Audio:     []Audio{},
+		Video:     []Video{},
+		LocaleAlt: []string{},
+		Intent: Intent{
+			URL: rawurl,
+		},
 	}
-	og.URL = URL{Source: u.String(), URL: u}
-	return og
 }
 
 // Fetch creates and parses OpenGraph with specified URL.
-func Fetch(rawurl string, customHTTPClient ...*http.Client) (*OpenGraph, error) {
-	return FetchWithContext(context.Background(), rawurl, customHTTPClient...)
+func Fetch(url string, intent ...Intent) (*OpenGraph, error) {
+	ogp := New(url)
+	if len(intent) > 0 {
+		ogp.Intent = intent[0]
+	}
+	ogp.Intent.URL = url
+	err := ogp.Fetch()
+	return ogp, err
 }
 
-// FetchWithContext creates and parses OpenGraph with specified URL.
-// Timeout can be handled with provided context.
-func FetchWithContext(ctx context.Context, rawurl string, customHTTPClient ...*http.Client) (*OpenGraph, error) {
-	og := New(rawurl)
-	if og.Error != nil {
-		return og, og.Error
+// Fetch ...
+func (og *OpenGraph) Fetch() error {
+
+	if og.Intent.URL == "" {
+		return fmt.Errorf("no URL given yet")
 	}
 
-	// Use custom http client if given
-	if len(customHTTPClient) != 0 {
-		og.HTTPClient = customHTTPClient[0]
+	if og.Intent.HTTPClient == nil {
+		og.Intent.HTTPClient = http.DefaultClient
 	}
 
-	req, err := http.NewRequest("GET", og.URL.String(), nil)
+	req, err := http.NewRequest("GET", og.Intent.URL, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	req = req.WithContext(ctx)
+	if og.Intent.Context == nil {
+		og.Intent.Context = context.Background()
+	}
 
-	res, err := og.HTTPClient.Do(req)
+	req = req.WithContext(og.Intent.Context)
+
+	res, err := og.Intent.HTTPClient.Do(req)
 	if err != nil {
-		return og, err
+		return err
 	}
 	defer res.Body.Close()
 
 	if !strings.HasPrefix(res.Header.Get("Content-Type"), "text/html") {
-		return og, fmt.Errorf("Content type must be text/html")
+		return fmt.Errorf("Content type must be text/html")
 	}
 
 	if err = og.Parse(res.Body); err != nil {
-		return og, err
+		return err
 	}
 
-	return og, err
+	if !og.Intent.Strict && og.Favicon.URL == "" {
+		og.Favicon.URL = "/favicon.ico"
+	}
+
+	return nil
 }
 
 // Parse parses http.Response.Body and construct OpenGraph informations.
-// Caller should close body after it get parsed.
+// Caller should close body after it gets parsed.
 func (og *OpenGraph) Parse(body io.Reader) error {
-	if og.Error != nil {
-		return og.Error
-	}
 	node, err := html.Parse(body)
 	if err != nil {
 		return err
 	}
-	og.walk(node)
-	return nil
+	return og.Walk(node)
 }
 
 // Walk scans HTML nodes to pick up meaningful OGP data.
-func (og *OpenGraph) Walk(n *html.Node) error {
-	return og.walk(n)
-}
-
-func (og *OpenGraph) satisfied() bool {
-	return false
-}
-
-func (og *OpenGraph) walk(n *html.Node) error {
-	if og.satisfied() {
-		return nil
-	}
-
-	if n.Type == html.ElementNode {
-		if !og.trust(n.Data) {
-			return nil
+func (og *OpenGraph) Walk(node *html.Node) error {
+	if len(og.Intent.TrustedTags) == 0 {
+		if og.Intent.Strict {
+			og.Intent.TrustedTags = []string{HTMLMetaTag}
+		} else {
+			og.Intent.TrustedTags = []string{HTMLMetaTag, HTMLTitleTag, HTMLLinkTag}
 		}
-		switch n.Data {
-		case HTMLTitleTag:
-			return TitleTag(n).Contribute(og)
-		case HTMLMetaTag:
-			return MetaTag(n).Contribute(og)
-		case HTMLLinkTag:
-			return LinkTag(n).Contribute(og)
+	}
+	return og.walk(node)
+}
+
+func (og *OpenGraph) walk(node *html.Node) error {
+
+	if node.Type == html.ElementNode {
+		switch {
+		case node.Data == HTMLMetaTag && og.trust(node.Data):
+			return MetaTag(node).Contribute(og)
+		case node.Data == HTMLTitleTag && og.trust(node.Data):
+			return TitleTag(node).Contribute(og)
+		case node.Data == HTMLLinkTag && og.trust(node.Data):
+			return LinkTag(node).Contribute(og)
 		}
 	}
 
-	for child := n.FirstChild; child != nil; child = child.NextSibling {
+	for child := node.FirstChild; child != nil; child = child.NextSibling {
 		og.walk(child)
 	}
 
@@ -178,43 +163,51 @@ func (og *OpenGraph) walk(n *html.Node) error {
 }
 
 func (og *OpenGraph) trust(tagName string) bool {
-	if len(og.Policy.TrustedTags) == 0 {
-		return true
+	for _, name := range og.Intent.TrustedTags {
+		if name == tagName {
+			return true
+		}
 	}
-	return sort.SearchStrings(og.Policy.TrustedTags, tagName) != len(og.Policy.TrustedTags)
+	return false
 }
 
-// ToAbsURL make og.Image and og.Favicon absolute URL if relative.
-func (og *OpenGraph) ToAbsURL() *OpenGraph {
-	for _, img := range og.Image {
-		img.URL = og.abs(img.URL)
+// ToAbs makes all relative URLs to absolute URLs
+// by applying hostname of ogp.URL or Intent.URL.
+func (og *OpenGraph) ToAbs() error {
+	raw := og.URL
+	if raw == "" {
+		raw = og.Intent.URL
 	}
-	og.Favicon = og.abs(og.Favicon)
-	return og
-}
-
-// abs make given URL absolute.
-func (og *OpenGraph) abs(raw string) string {
-	u, _ := url.Parse(raw)
-	if u.IsAbs() {
-		return raw
+	base, err := url.Parse(raw)
+	if err != nil {
+		return err
 	}
-	if u.Scheme == "" {
-		u.Scheme = og.URL.Scheme
+	// For og:image.
+	for i, img := range og.Image {
+		og.Image[i].URL = og.joinToAbsolute(base, img.URL)
 	}
-	if u.Host == "" {
-		u.Host = og.URL.Host
+	// For og:audio
+	for i, audio := range og.Audio {
+		og.Audio[i].URL = og.joinToAbsolute(base, audio.URL)
 	}
-	if !filepath.IsAbs(raw) {
-		u.Path = path.Join(filepath.Dir(og.URL.Path), u.Path)
+	// For og:video
+	for i, video := range og.Video {
+		og.Video[i].URL = og.joinToAbsolute(base, video.URL)
 	}
-	return u.String()
-}
-
-// Fulfill fulfills OG informations with some expectations.
-func (og *OpenGraph) Fulfill() error {
-	if og.SiteName == "" {
-		og.SiteName = og.URL.Host
+	// For favicon
+	if og.Favicon.URL != "" {
+		og.Favicon.URL = og.joinToAbsolute(base, og.Favicon.URL)
 	}
 	return nil
+}
+
+func (og *OpenGraph) joinToAbsolute(base *url.URL, relpath string) string {
+	src, err := url.Parse(relpath)
+	if err == nil && src.IsAbs() {
+		return src.String()
+	}
+	if strings.HasPrefix(relpath, "/") {
+		return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, relpath)
+	}
+	return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, path.Join(base.Path, relpath))
 }

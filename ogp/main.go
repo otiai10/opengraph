@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/otiai10/opengraph"
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Version = "1.0.0"
+	app.Version = "2.0.0"
 	app.Usage = "Fetch URL and extract OpenGraph meta informations."
 	app.UsageText = "ogp [-A] {URL}"
 	app.Flags = []cli.Flag{
@@ -25,12 +26,21 @@ func main() {
 		if rawurl == "" {
 			return fmt.Errorf("URL must be specified")
 		}
-		og, err := opengraph.Fetch(rawurl)
+		u, err := url.Parse(rawurl)
 		if err != nil {
 			return err
 		}
+		if u.Scheme == "" {
+			u.Scheme = "https"
+		}
+		og := opengraph.New(u.String())
+		if err := og.Fetch(); err != nil {
+			return err
+		}
 		if ctx.Bool("absolute") {
-			og = og.ToAbsURL()
+			if err := og.ToAbs(); err != nil {
+				return err
+			}
 		}
 		b, err := json.MarshalIndent(og, "", "\t")
 		if err != nil {
