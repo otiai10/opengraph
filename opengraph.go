@@ -123,7 +123,15 @@ func (og *OpenGraph) Fetch() error {
 // Parse parses http.Response.Body and construct OpenGraph informations.
 // Caller should close body after it gets parsed.
 func (og *OpenGraph) Parse(body io.Reader) error {
+	node, err := html.Parse(body)
+	if err != nil {
+		return err
+	}
+	return og.Walk(node)
+}
 
+// Walk scans HTML nodes to pick up meaningful OGP data.
+func (og *OpenGraph) Walk(node *html.Node) error {
 	if len(og.Intent.TrustedTags) == 0 {
 		if og.Intent.Strict {
 			og.Intent.TrustedTags = []string{HTMLMetaTag}
@@ -131,18 +139,7 @@ func (og *OpenGraph) Parse(body io.Reader) error {
 			og.Intent.TrustedTags = []string{HTMLMetaTag, HTMLTitleTag, HTMLLinkTag}
 		}
 	}
-
-	node, err := html.Parse(body)
-	if err != nil {
-		return err
-	}
-	og.walk(node)
-	return nil
-}
-
-// Walk scans HTML nodes to pick up meaningful OGP data.
-func (og *OpenGraph) Walk(n *html.Node) error {
-	return og.walk(n)
+	return og.walk(node)
 }
 
 func (og *OpenGraph) walk(node *html.Node) error {
