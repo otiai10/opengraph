@@ -1,6 +1,6 @@
 # Open Graph Parser for Golang
 
-Yet another implementation of https://ogp.me/ by Go.
+Go implementation of https://ogp.me/
 
 [![Go](https://github.com/otiai10/opengraph/workflows/Go/badge.svg)](https://github.com/otiai10/opengraph/actions)
 [![codecov](https://codecov.io/gh/otiai10/opengraph/branch/master/graph/badge.svg)](https://codecov.io/gh/otiai10/opengraph)
