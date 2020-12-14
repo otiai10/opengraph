@@ -1,4 +1,4 @@
-module github.com/otiai10/opengraph
+module github.com/otiai10/opengraph/v2
 
 require (
 	github.com/otiai10/marmoset v0.4.0

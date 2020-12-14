@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/otiai10/opengraph"
+	"github.com/otiai10/opengraph/v2"
 	"github.com/urfave/cli"
 )
 
