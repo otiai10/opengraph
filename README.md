@@ -2,12 +2,12 @@
 
 Go implementation of https://ogp.me/
 
-[![reference](https://pkg.go.dev/badge/github.com/otiai10/opengraph)](https://pkg.go.dev/github.com/otiai10/opengraph)
+[![reference](https://pkg.go.dev/badge/github.com/otiai10/opengraph)](https://pkg.go.dev/github.com/otiai10/opengraph/v2)
 [![Go](https://github.com/otiai10/opengraph/workflows/Go/badge.svg)](https://github.com/otiai10/opengraph/actions)
 [![codecov](https://codecov.io/gh/otiai10/opengraph/branch/main/graph/badge.svg?token=D4mPKqi9fH)](https://codecov.io/gh/otiai10/opengraph)
 [![Go Report Card](https://goreportcard.com/badge/github.com/otiai10/opengraph)](https://goreportcard.com/report/github.com/otiai10/opengraph)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/otiai10/opengraph/blob/main/LICENSE)
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/otiai10/opengraph?sort=semver)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/otiai10/opengraph?sort=semver)](https://pkg.go.dev/github.com/otiai10/opengraph/v2)
 
 # Code Example
 
