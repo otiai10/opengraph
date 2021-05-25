@@ -8,6 +8,7 @@ Go implementation of https://ogp.me/
 [![Go Report Card](https://goreportcard.com/badge/github.com/otiai10/opengraph)](https://goreportcard.com/report/github.com/otiai10/opengraph)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/otiai10/opengraph/blob/main/LICENSE)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/otiai10/opengraph?sort=semver)](https://pkg.go.dev/github.com/otiai10/opengraph/v2)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fotiai10%2Fopengraph.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fotiai10%2Fopengraph?ref=badge_shield)
 
 # Code Example
 
@@ -73,3 +74,7 @@ ogp.Image[0].URL // https://ogp.me/logo.png
 # Issues
 
 - https://github.com/otiai10/opengraph/issues
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fotiai10%2Fopengraph.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fotiai10%2Fopengraph?ref=badge_large)
