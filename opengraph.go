@@ -79,7 +79,6 @@ func Fetch(url string, intent ...Intent) (*OpenGraph, error) {
 
 // Fetch ...
 func (og *OpenGraph) Fetch() error {
-
 	if og.Intent.URL == "" {
 		return fmt.Errorf("no URL given yet")
 	}
@@ -143,7 +142,6 @@ func (og *OpenGraph) Walk(node *html.Node) error {
 }
 
 func (og *OpenGraph) walk(node *html.Node) error {
-
 	if node.Type == html.ElementNode {
 		switch {
 		case node.Data == HTMLMetaTag && og.trust(node.Data):
@@ -205,6 +203,9 @@ func (og *OpenGraph) joinToAbsolute(base *url.URL, relpath string) string {
 	src, err := url.Parse(relpath)
 	if err == nil && src.IsAbs() {
 		return src.String()
+	}
+	if strings.HasPrefix(relpath, "//") {
+		return fmt.Sprintf("%s:%s", base.Scheme, relpath)
 	}
 	if strings.HasPrefix(relpath, "/") {
 		return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, relpath)

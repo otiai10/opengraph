@@ -157,6 +157,18 @@ func TestOpenGraph_ToAbs(t *testing.T) {
 	u, err = url.Parse(ogp.Audio[0].URL)
 	Expect(t, err).ToBe(nil)
 	Expect(t, u.IsAbs()).ToBe(true)
+
+	ogp = New(testserver.URL + "/case/03_image")
+	err = ogp.Fetch()
+	Expect(t, err).ToBe(nil)
+	err = ogp.ToAbs()
+	Expect(t, err).ToBe(nil)
+	u, err = url.Parse(ogp.Image[0].URL)
+	Expect(t, err).ToBe(nil)
+	Expect(t, u.IsAbs()).ToBe(true)
+	Expect(t, u.Host).ToBe("www-cdn.jtvnw.net")
+	Expect(t, u.Path).ToBe("/images/twitch_logo3.jpg")
+	Expect(t, u.String()).ToBe("http://www-cdn.jtvnw.net/images/twitch_logo3.jpg")
 }
 
 // This server is ONLY for testing.
