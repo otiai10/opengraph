@@ -168,6 +168,7 @@ func TestOpenGraph_ToAbs(t *testing.T) {
 	Expect(t, u.IsAbs()).ToBe(true)
 	Expect(t, u.Host).ToBe("www-cdn.jtvnw.net")
 	Expect(t, u.Path).ToBe("/images/twitch_logo3.jpg")
+	Expect(t, u.String()).ToBe("http://www-cdn.jtvnw.net/images/twitch_logo3.jpg")
 }
 
 // This server is ONLY for testing.
