@@ -42,7 +42,9 @@ func (meta *Meta) Contribute(og *OpenGraph) (err error) {
 	case meta.IsSiteName():
 		og.SiteName = meta.Content
 	case meta.IsImage():
-		og.Image = append(og.Image, Image{URL: meta.Content})
+		if len(og.Image) == 0 || og.Image[len(og.Image)-1].URL != meta.Content {
+			og.Image = append(og.Image, Image{URL: meta.Content})
+		}
 	case meta.IsPropertyOf("og:image"):
 		if len(og.Image) == 0 {
 			return nil
@@ -54,9 +56,13 @@ func (meta *Meta) Contribute(og *OpenGraph) (err error) {
 			og.Image[len(og.Image)-1].Height, err = strconv.Atoi(meta.Content)
 		}
 	case meta.IsAudio():
-		og.Audio = append(og.Audio, Audio{URL: meta.Content})
+		if len(og.Audio) == 0 || og.Audio[len(og.Audio)-1].URL != meta.Content {
+			og.Audio = append(og.Audio, Audio{URL: meta.Content})
+		}
 	case meta.IsVideo():
-		og.Video = append(og.Video, Video{URL: meta.Content})
+		if len(og.Video) == 0 || og.Video[len(og.Video)-1].URL != meta.Content {
+			og.Video = append(og.Video, Video{URL: meta.Content})
+		}
 	case meta.IsPropertyOf("og:video"):
 		if len(og.Video) == 0 {
 			return nil
