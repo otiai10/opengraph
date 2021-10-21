@@ -104,14 +104,17 @@ func TestOpenGraph_Fetch(t *testing.T) {
 func TestFetchVideo(t *testing.T) {
 	og, err := Fetch(testserver.URL + "/case/05_video")
 	Expect(t, err).ToBe(nil)
-	Expect(t, og.Video).ToBe([]Video{
-		{
-			URL:       "https://www.youtube.com/embed/1MxA0i2rxQo",
-			SecureURL: "https://www.youtube.com/embed/1MxA0i2rxQo",
-			Type:      "text/html",
-			Width:     1280,
-			Height:    720,
-		},
+	Because(t, "og:video:url - Identical to og:video", func(t *testing.T) {
+		Expect(t, len(og.Video)).ToBe(1)
+		Expect(t, og.Video).ToBe([]Video{
+			{
+				URL:       "https://www.youtube.com/embed/1MxA0i2rxQo",
+				SecureURL: "https://www.youtube.com/embed/1MxA0i2rxQo",
+				Type:      "text/html",
+				Width:     1280,
+				Height:    720,
+			},
+		})
 	})
 }
 
