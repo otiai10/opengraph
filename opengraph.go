@@ -5,8 +5,8 @@ package opengraph
 import (
 	"context"
 	"fmt"
+	"github.com/otiai10/opengraph/v2/http_fetchers"
 	"io"
-	"net/http"
 	"net/url"
 	"path"
 	"strings"
@@ -83,32 +83,21 @@ func (og *OpenGraph) Fetch() error {
 		return fmt.Errorf("no URL given yet")
 	}
 
-	if og.Intent.HTTPClient == nil {
-		og.Intent.HTTPClient = http.DefaultClient
-	}
-
-	req, err := http.NewRequest("GET", og.Intent.URL, nil)
-	if err != nil {
-		return err
+	if og.Intent.HTTPFetcher == nil {
+		og.Intent.HTTPFetcher = http_fetchers.DefaultSimpleHTTPFetcher
 	}
 
 	if og.Intent.Context == nil {
 		og.Intent.Context = context.Background()
 	}
 
-	req = req.WithContext(og.Intent.Context)
-
-	res, err := og.Intent.HTTPClient.Do(req)
+	body, err := og.Intent.HTTPFetcher.Get(og.Intent.Context, og.Intent.URL)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer body.Close()
 
-	if !strings.HasPrefix(res.Header.Get("Content-Type"), "text/html") {
-		return fmt.Errorf("Content type must be text/html")
-	}
-
-	if err = og.Parse(res.Body); err != nil {
+	if err = og.Parse(body); err != nil {
 		return err
 	}
 

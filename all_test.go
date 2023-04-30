@@ -2,6 +2,7 @@ package opengraph
 
 import (
 	"context"
+	"github.com/otiai10/opengraph/v2/http_fetchers"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -95,7 +96,7 @@ func TestOpenGraph_Fetch(t *testing.T) {
 	})
 
 	When(t, "custom http client is given", func(t *testing.T) {
-		ogp.Intent.HTTPClient = http.DefaultClient
+		ogp.Intent.HTTPFetcher = http_fetchers.DefaultSimpleHTTPFetcher
 		err := ogp.Fetch()
 		Expect(t, err).ToBe(nil)
 	})

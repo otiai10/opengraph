@@ -2,8 +2,12 @@ package opengraph
 
 import (
 	"context"
-	"net/http"
+	"io"
 )
+
+type HttpFetcher interface {
+	Get(ctx context.Context, url string) (io.ReadCloser, error)
+}
 
 // Intent represents how to fetch, parse, and complete properties
 // of this OpenGraph object.
@@ -17,7 +21,7 @@ type Intent struct {
 	// Context of the web request of this Intent.
 	Context context.Context
 	// HTTP Client to be used for this intent.
-	HTTPClient *http.Client
+	HTTPFetcher HttpFetcher
 
 	// Scrict is just an alias of `TrustedTags`.
 	// `Strict == true` means `TrustedTags = ["meta"]`,
