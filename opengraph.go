@@ -224,5 +224,9 @@ func (og *OpenGraph) joinToAbsolute(base *url.URL, relpath string) string {
 	if strings.HasPrefix(relpath, "/") {
 		return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, relpath)
 	}
-	return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, path.Join(base.Path, relpath))
+	dir := path.Dir(base.Path)
+	if dir == "" || dir == "." {
+		dir = "/"
+	}
+	return fmt.Sprintf("%s://%s%s", base.Scheme, base.Host, path.Join(dir, relpath))
 }

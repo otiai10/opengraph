@@ -172,6 +172,87 @@ func TestOpenGraph_ToAbs(t *testing.T) {
 	Expect(t, u.Host).ToBe("www-cdn.jtvnw.net")
 	Expect(t, u.Path).ToBe("/images/twitch_logo3.jpg")
 	Expect(t, u.String()).ToBe("http://www-cdn.jtvnw.net/images/twitch_logo3.jpg")
+
+	When(t, "relative favicon with parent directory reference", func(t *testing.T) {
+		ogp := New(testserver.URL + "/case/06_relative_favicon")
+		err := ogp.Fetch()
+		Expect(t, err).ToBe(nil)
+		Expect(t, ogp.Favicon.URL).ToBe("../favicon.svg")
+		err = ogp.ToAbs()
+		Expect(t, err).ToBe(nil)
+		u, err := url.Parse(ogp.Favicon.URL)
+		Expect(t, err).ToBe(nil)
+		Expect(t, u.IsAbs()).ToBe(true)
+		Expect(t, u.Path).ToBe("/favicon.svg")
+	})
+}
+
+func TestJoinToAbsolute(t *testing.T) {
+	tests := []struct {
+		name     string
+		baseURL  string
+		relpath  string
+		expected string
+	}{
+		{
+			name:     "simple relative path from nested URL",
+			baseURL:  "https://example.com/news/article",
+			relpath:  "image.jpg",
+			expected: "https://example.com/news/image.jpg",
+		},
+		{
+			name:     "parent directory reference",
+			baseURL:  "https://example.com/news/article",
+			relpath:  "../favicon.svg",
+			expected: "https://example.com/favicon.svg",
+		},
+		{
+			name:     "double parent directory reference",
+			baseURL:  "https://example.com/a/b/c",
+			relpath:  "../../image.png",
+			expected: "https://example.com/image.png",
+		},
+		{
+			name:     "absolute path",
+			baseURL:  "https://example.com/news/article",
+			relpath:  "/images/logo.png",
+			expected: "https://example.com/images/logo.png",
+		},
+		{
+			name:     "already absolute URL",
+			baseURL:  "https://example.com/news/article",
+			relpath:  "https://cdn.example.com/image.jpg",
+			expected: "https://cdn.example.com/image.jpg",
+		},
+		{
+			name:     "protocol-relative URL",
+			baseURL:  "https://example.com/news/article",
+			relpath:  "//cdn.example.com/image.jpg",
+			expected: "https://cdn.example.com/image.jpg",
+		},
+		{
+			name:     "relative path from root URL",
+			baseURL:  "https://example.com/",
+			relpath:  "image.jpg",
+			expected: "https://example.com/image.jpg",
+		},
+		{
+			name:     "relative path from root URL without trailing slash",
+			baseURL:  "https://example.com",
+			relpath:  "image.jpg",
+			expected: "https://example.com/image.jpg",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ogp := &OpenGraph{URL: tt.baseURL}
+			base, err := url.Parse(tt.baseURL)
+			Expect(t, err).ToBe(nil)
+			result := ogp.joinToAbsolute(base, tt.relpath)
+			Expect(t, result).ToBe(tt.expected)
+		})
+	}
 }
 
 // This server is ONLY for testing.
